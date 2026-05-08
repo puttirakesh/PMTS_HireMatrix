@@ -1,37 +1,44 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/src/lib/auth";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import dbConnect from "@/src/lib/db";
 import Resume from "@/src/models/Resume";
 import ResumeComment from "@/src/models/ResumeComment";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
   await dbConnect();
-  const resume = await Resume.findById(params.id).lean();
+  const resume = await Resume.findById(id).lean();
   if (!resume) {
     return NextResponse.json({ error: "Resume not found" }, { status: 404 });
   }
 
-  const comments = await ResumeComment.find({ resumeId: params.id })
+  const comments = await ResumeComment.find({ resumeId: id })
     .sort({ createdAt: -1 })
     .lean();
 
   return NextResponse.json(comments);
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
   await dbConnect();
-  const resume = await Resume.findById(params.id).lean();
+  const resume = await Resume.findById(id).lean();
   if (!resume) {
     return NextResponse.json({ error: "Resume not found" }, { status: 404 });
   }
@@ -42,12 +49,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: "Comment message is required" }, { status: 400 });
   }
 
-  const email = session.user.email || "unknown";
-  const userName = email.split("@")[0] || "user";
+  const user = await currentUser();
+  const userName =
+    user?.fullName ||
+    user?.username ||
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+    "Unknown user";
 
   const comment = await ResumeComment.create({
-    resumeId: params.id,
-    userId: session.user.id,
+    resumeId: id,
+    userId: userId,
     userName,
     message,
   });

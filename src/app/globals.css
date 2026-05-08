@@ -1,26 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
 @import "tailwindcss";
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ffffff;    /* White background */
+  --card: #f3f5f8;          /* Light blue-tinted card bg */
+  --primary: #2874fc;       /* Blue primary color */
+  --secondary: #0b0b0f;     /* Black as a secondary color */
+  --text: #0b0b0f;          /* Black text */
+  --muted: #4472c4;         /* Muted blue */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--text);
+  overflow-x: hidden;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.glass {
+  background: rgba(40, 116, 252, 0.03); /* subtle blue overlay */
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(40, 116, 252, 0.08); /* blue border tint */
+}
+
+.blue-gradient {
+  background: linear-gradient(
+    to right,
+    #2874fc,
+    #005bea
+  );
+}
+
+/* SCROLLBAR */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e2e8f0; /* very light blue/gray track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #007FFF;
+  border-radius: 999px;
 }

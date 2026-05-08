@@ -1,93 +1,190 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/src/lib/auth";
-import { redirect } from "next/navigation";
-import dbConnect from "@/src/lib/db";
-import Resume from "@/src/models/Resume";
-import ResumeCard, { ResumeCardResume } from "@/src/components/resumes/ResumeCard";
-import { Plus, FileText, Sparkles } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
+import {
+ 
+  Search,
+  FileText,
+  Sparkles,
+
+  ShieldCheck,
+} from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  const { userId } = await auth();
 
-  await dbConnect();
+  // Primary theme colors
+  const blue = "#0530AD";
+  const black = "#0B0B0F";
+  const white = "#FFFFFF";
+  // Helper classes for badge and cards
+  const badgeBg = "bg-[#E3F2FD]";
+  const badgeBorder = "border-[#0530AD33]";
+  const badgeText = "text-[#0530AD]";
 
-  const dbResumes = await Resume.find({ userId: session.user.id })
-    .sort({ createdAt: -1 })
-    .lean();
+  const LandingHero = ({ loggedIn }: { loggedIn: boolean }) => (
+    <main className="min-h-screen overflow-hidden" style={{ background: white, color: black }}>
 
-  const resumes: ResumeCardResume[] = dbResumes.map((resume) => ({
-    ...resume,
-    _id: resume._id.toString(),
-    userId: resume.userId.toString(),
-    createdAt: resume.createdAt?.toISOString(),
-    updatedAt: resume.updatedAt?.toISOString(),
-  }));
+      {/* BLUE GLOW EFFECTS */}
+      <div
+        className="absolute left-[-120px] top-[-120px] h-[350px] w-[350px] rounded-full"
+        style={{ background: "#0530AD22", filter: "blur(70px)", zIndex: 0 }}
+      />
+      <div
+        className="absolute bottom-[-120px] right-[-120px] h-[350px] w-[350px] rounded-full"
+        style={{ background: "#0530AD11", filter: "blur(70px)", zIndex: 0 }}
+      />
 
-  return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
+      {/* HERO */}
+      <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center px-6 text-center">
+        {/* BADGE */}
+        <div className={`mb-6 inline-flex items-center gap-2 rounded-full border ${badgeBorder} ${badgeBg} px-5 py-2 text-sm font-medium ${badgeText}`}>
+          <Sparkles style={{ color: blue }} className="h-4 w-4" />
+          Welcome To HireMatrix Dashboard
+        </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 text-violet-600 mb-2">
-              <Sparkles className="w-5 h-5" />
-              <span className="uppercase tracking-[2px] text-sm font-medium">Dashboard</span>
-            </div>
-            <h1 className="text-5xl font-bold tracking-tighter text-slate-900">
-              Your Résumés
-            </h1>
-            <p className="text-slate-600 mt-3 text-lg max-w-md">
-              Manage and organize your candidate profiles with elegance
-            </p>
-          </div>
-
-          <a
-            href="/upload"
-            className="btn btn-primary shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-300 flex items-center gap-3 group px-8 h-14 text-base font-medium"
+        {/* TITLE */}
+        <h1
+          className="max-w-5xl text-5xl font-extrabold leading-tight tracking-tight md:text-7xl"
+          style={{ color: blue }}
+        >
+          The Future Of
+          <span
+            className="bg-clip-text text-transparent"
+            style={{
+              color: blue,
+              backgroundImage: `linear-gradient(90deg, ${blue}, ${blue})`,
+              WebkitTextFillColor: "transparent",
+              WebkitBackgroundClip: "text",
+            }}
           >
-            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-            Upload New Résumé
-          </a>
-        </div>
+            {" "}Recruitment Workflow
+          </span>
+        </h1>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-            <p className="text-sm text-slate-500">Total Résumés</p>
-            <p className="text-4xl font-semibold mt-1 text-slate-900">{resumes.length}</p>
-          </div>
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-            <p className="text-sm text-slate-500">This Month</p>
-            <p className="text-4xl font-semibold mt-1 text-emerald-600">12</p>
-          </div>
-        </div>
+        {/* SUBTITLE */}
+        <p className="mt-8 max-w-3xl text-lg leading-relaxed text-zinc-600 md:text-xl">
+          Upload, organize, search, and collaborate on resumes
+          with a premium recruiter experience powered by modern
+          workflow tools.
+        </p>
 
-        {resumes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white/70 backdrop-blur-xl rounded-3xl border border-slate-100 shadow-sm">
-            <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-              <FileText className="w-12 h-12 text-slate-400" />
-            </div>
-            <h3 className="text-2xl font-semibold text-slate-700 mb-2">No résumés yet</h3>
-            <p className="text-slate-500 max-w-sm text-center mb-8">
-              Upload your first candidate profile to get started.
-            </p>
-            <a
-              href="/dashboard/upload"
-              className="btn btn-primary btn-lg shadow-lg shadow-violet-500/30 hover:shadow-xl"
+        {/* BUTTONS */}
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          {!loggedIn ? (
+            <>
+              <Link href="/">
+                <button
+                  className="rounded-2xl bg-gradient-to-r from-[#0530AD] to-[#1e275d] px-8 py-4 text-lg font-semibold text-white shadow-2xl shadow-[#0530AD22] transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: `linear-gradient(90deg, ${blue}, #1e275d)`,
+                  }}
+                >
+                  Get Started
+                </button>
+              </Link>
+
+              <Link href="/">
+                <button
+                  className="rounded-2xl border border-[#0B0B0F]/10 bg-[#F7FAFC] px-8 py-4 text-lg font-semibold"
+                  style={{ color: blue }}
+                >
+                  Learn More
+                </button>
+              </Link>
+            </>
+          ) : (
+            <button
+              className="rounded-2xl bg-[#0530AD] px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 cursor-default"
+              style={{ background: blue }}
+              disabled
             >
-              <Plus className="w-5 h-5 mr-2" />
-              Upload Your First Résumé
-            </a>
+              Start Working
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* FEATURE SECTION */}
+      <section className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 pb-24 md:grid-cols-3">
+        {/* CARD 1 */}
+        <div
+          className="glass rounded-3xl p-8 border transition duration-300 hover:-translate-y-2"
+          style={{
+            borderColor: "#E3F2FD",
+            background: white,
+            boxShadow: `0 2px 12px 0 ${blue}18`,
+          }}
+        >
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "#E3F2FD" }}>
+            <FileText style={{ color: blue }} className="h-7 w-7" />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {resumes.map((resume) => (
-              <ResumeCard key={resume._id} resume={resume} />
-            ))}
+          <h3 className="mb-3 text-2xl font-bold" style={{ color: black }}>
+            Resume Management
+          </h3>
+          <p className="text-zinc-600">
+            Store and organize candidate resumes securely using
+            Cloudinary and MongoDB.
+          </p>
+        </div>
+
+        {/* CARD 2 */}
+        <div
+          className="glass rounded-3xl p-8 border transition duration-300 hover:-translate-y-2"
+          style={{
+            borderColor: "#E3F2FD",
+            background: white,
+            boxShadow: `0 2px 12px 0 ${blue}18`,
+          }}
+        >
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "#E3F2FD" }}>
+            <Search style={{ color: blue }} className="h-7 w-7" />
           </div>
-        )}
-      </div>
-    </div>
+          <h3 className="mb-3 text-2xl font-bold" style={{ color: black }}>
+            Smart Search
+          </h3>
+          <p className="text-zinc-600">
+            Use Boolean search and advanced filters to find
+            candidates instantly.
+          </p>
+        </div>
+
+        {/* CARD 3 */}
+        <div
+          className="glass rounded-3xl p-8 border transition duration-300 hover:-translate-y-2"
+          style={{
+            borderColor: "#E3F2FD",
+            background: white,
+            boxShadow: `0 2px 12px 0 ${blue}18`,
+          }}
+        >
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "#E3F2FD" }}>
+            <ShieldCheck style={{ color: blue }} className="h-7 w-7" />
+          </div>
+          <h3 className="mb-3 text-2xl font-bold" style={{ color: black }}>
+            Secure Collaboration
+          </h3>
+          <p className="text-zinc-600">
+            Recruiters can collaborate using comments and shared
+            workflows securely.
+          </p>
+        </div>
+      </section>
+    </main>
+  );
+
+  // Not logged in
+  if (!userId) {
+    return (
+      <>
+        <LandingHero loggedIn={false} />
+      </>
+    );
+  }
+
+  // Logged in
+  return (
+    <>
+      <LandingHero loggedIn={true} />
+    </>
   );
 }

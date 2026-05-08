@@ -1,38 +1,29 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/src/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import dbConnect from "@/src/lib/db";
 import ResumeComment from "@/src/models/ResumeComment";
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string; commentId: string } }
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string; commentId: string }> }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id, commentId } = await params;
   await dbConnect();
-  const body = await req.json();
-  const message = body?.message?.trim();
-  if (!message) {
-    return NextResponse.json({ error: "Comment message is required" }, { status: 400 });
-  }
 
-  const updatedComment = await ResumeComment.findOneAndUpdate(
-    {
-      _id: params.commentId,
-      resumeId: params.id,
-      userId: session.user.id,
-    },
-    { $set: { message } },
-    { new: true }
-  );
+  const deletedComment = await ResumeComment.findOneAndDelete({
+    _id: commentId,
+    resumeId: id,
+    userId,
+  });
 
-  if (!updatedComment) {
+  if (!deletedComment) {
     return NextResponse.json({ error: "Comment not found or access denied" }, { status: 404 });
   }
 
-  return NextResponse.json(updatedComment);
+  return NextResponse.json({ message: "Comment deleted" });
 }
