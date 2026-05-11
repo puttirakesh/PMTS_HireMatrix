@@ -93,13 +93,15 @@ export default async function DashboardPage() {
               </Link>
             </>
           ) : (
-            <button
-              className="rounded-2xl bg-[#0530AD] px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 cursor-default"
-              style={{ background: blue }}
-              disabled
-            >
-              Start Working
-            </button>
+            <Link href="/resumes">
+              <button
+                className="rounded-2xl bg-[#0530AD] px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:scale-105"
+                style={{ background: blue }}
+              >
+                Start Working
+              </button>
+            </Link>
+       
           )}
         </div>
       </section>

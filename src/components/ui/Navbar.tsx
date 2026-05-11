@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,8 +25,13 @@ import { useTheme } from "next-themes";
 export default function Navbar() {
   const [mobileMenu, setMobileMenu] = useState(false);
 
-  // Keeping theme logic for completeness.
-  const { theme, setTheme } = useTheme();
+  // Ensure theme is accessed on client to prevent hydration mismatch
+  const { theme, setTheme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { user, isSignedIn } = useUser();
 
@@ -44,6 +49,30 @@ export default function Navbar() {
       href: "/resumes",
     },
   ];
+
+  // We only render theme UI after mounting, to prevent SSR/CSR mismatch
+  function renderThemeToggle() {
+    if (!mounted) return null;
+    // Use resolved theme for icon display
+    const effectiveTheme = theme === "system" ? systemTheme : theme;
+    return (
+      <motion.button
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label="Toggle theme"
+        onClick={() =>
+          setTheme(effectiveTheme === "dark" ? "light" : "dark")
+        }
+        className="rounded-full border border-black/10 bg-blue-50 p-2.5 transition"
+      >
+        {effectiveTheme === "dark" ? (
+          <Sun className="h-5 w-5 text-blue-700" />
+        ) : (
+          <Moon className="h-5 w-5 text-blue-700" />
+        )}
+      </motion.button>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-white/95 backdrop-blur-xl">
@@ -107,20 +136,7 @@ export default function Navbar() {
           </motion.button>
 
           {/* THEME */}
-          <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() =>
-              setTheme(theme === "dark" ? "light" : "dark")
-            }
-            className="rounded-full border border-black/10 bg-blue-50 p-2.5 transition"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5 text-blue-700" />
-            ) : (
-              <Moon className="h-5 w-5 text-blue-700" />
-            )}
-          </motion.button>
+          {renderThemeToggle()}
 
           {/* USER */}
           {isSignedIn ? (
@@ -185,6 +201,11 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ))}
+
+              {/* THEME TOGGLE FOR MOBILE */}
+              <div className="flex justify-start mt-2">
+                {renderThemeToggle()}
+              </div>
 
               {isSignedIn ? (
                 <div className="mt-4 flex items-center gap-3 rounded-2xl border border-black/10 bg-blue-50 p-3">

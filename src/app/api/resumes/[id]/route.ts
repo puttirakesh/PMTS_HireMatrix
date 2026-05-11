@@ -56,7 +56,7 @@ export async function GET(
 // UPDATE RESUME
 // =========================
 
-export async function PUT(
+export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -74,28 +74,59 @@ export async function PUT(
 
     const { id } = await params;
 
-    const body = await req.json();
+    const existingResume = await Resume.findById(id);
 
-    const updatedResume =
-      await Resume.findOneAndUpdate(
-        {
-          _id: id,
-          userId,
-        },
-        {
-          $set: body,
-        },
-        {
-          new: true,
-        }
-      );
-
-    if (!updatedResume) {
+    if (!existingResume) {
       return NextResponse.json(
         { error: "Resume not found" },
         { status: 404 }
       );
     }
+
+    // ONLY OWNER CAN EDIT
+    if (existingResume.userId !== userId) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
+    const body = await req.json();
+
+    // DELETE OLD FILE IF NEW FILE UPLOADED
+    if (
+      body.public_id &&
+      body.public_id !== existingResume.public_id
+    ) {
+      try {
+        await cloudinary.uploader.destroy(
+          existingResume.public_id,
+          {
+            resource_type: "raw",
+          }
+        );
+      } catch (err) {
+        console.error("Cloudinary delete failed", err);
+      }
+    }
+
+    const updatedResume =
+      await Resume.findByIdAndUpdate(
+        id,
+        {
+          ...body,
+
+          // force fresh URL
+          fileUrl: body.fileUrl
+            ? `${body.fileUrl}?updated=${Date.now()}`
+            : existingResume.fileUrl,
+
+          updatedAt: new Date(),
+        },
+        {
+          new: true,
+        }
+      );
 
     return NextResponse.json(updatedResume);
 

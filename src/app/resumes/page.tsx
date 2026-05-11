@@ -38,18 +38,13 @@ export default function SearchPage() {
 
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
-
-  const [resumes, setResumes] = useState<
-    ResumeCardResume[]
-  >([]);
-
+  const [resumes, setResumes] = useState<ResumeCardResume[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [searching, setSearching] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // =========================================
-  // AUTH CHECK
-  // =========================================
+  // New state to control which card shows comments
+  const [openCommentsResumeId, setOpenCommentsResumeId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -64,6 +59,7 @@ export default function SearchPage() {
   async function fetchResumes() {
     try {
       setSearching(true);
+      setFetchError(null);
 
       const params = new URLSearchParams();
 
@@ -83,17 +79,16 @@ export default function SearchPage() {
       );
 
       if (!res.ok) {
-        throw new Error(
-          "Failed to fetch resumes"
-        );
+        setFetchError("Unable to load resumes at this time. Please try again later.");
+        setResumes([]);
+        return;
       }
 
       const data = await res.json();
-
       setResumes(data);
 
     } catch (error) {
-      console.error(error);
+      setFetchError("Unable to load resumes at this time. Please try again later.");
       setResumes([]);
     } finally {
       setLoading(false);
@@ -141,7 +136,8 @@ export default function SearchPage() {
     setQuery("");
     setLocation("");
     setLoading(true);
-    // After clearing, fetch all resumes (reset filters)
+    setFetchError(null);
+    setOpenCommentsResumeId(null); // Also clear open comments when clearing
     setTimeout(() => {
       fetchResumes();
     }, 0);
@@ -162,7 +158,7 @@ export default function SearchPage() {
   if (!user) return null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white text-[#0530AD]">
+    <main className="min-h-screen bg-linear-to-br from-white via-blue-50 to-white text-[#0530AD]">
       {/* BACKGROUND GLOW */}
       <div className="pointer-events-none absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-[#0530AD]/10 blur-3xl" />
 
@@ -188,11 +184,10 @@ export default function SearchPage() {
 
           <h1 className="text-5xl font-extrabold md:text-6xl">
             Search
-            <span className="bg-gradient-to-r from-[#0530AD] to-black bg-clip-text text-transparent">
+            <span className="text-[#0530AD]">
               {" "}Candidates
             </span>
           </h1>
-
           <p className="mt-5 max-w-3xl text-lg text-zinc-600">
             Search resumes using keywords,
             AND logic: separate keywords with commas to require all of them. Spaces inside phrases will NOT split phrases.
@@ -209,10 +204,8 @@ export default function SearchPage() {
               <label className="mb-3 block text-sm font-semibold text-[#0530AD]">
                 Search Keywords / AND Logic
               </label>
-
               <div className="relative">
                 <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0530AD]" />
-
                 <input
                   type="text"
                   value={query}
@@ -224,16 +217,13 @@ export default function SearchPage() {
                 />
               </div>
             </div>
-
             {/* LOCATION */}
             <div>
               <label className="mb-3 block text-sm font-semibold text-[#0530AD]">
                 Location
               </label>
-
               <div className="relative">
                 <MapPin className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0530AD]" />
-
                 <select
                   value={location}
                   onChange={(e) =>
@@ -244,7 +234,6 @@ export default function SearchPage() {
                   <option value="">
                     All Locations
                   </option>
-
                   {locations.map((loc) => (
                     <option
                       key={loc}
@@ -256,7 +245,6 @@ export default function SearchPage() {
                 </select>
               </div>
             </div>
-
             {/* SEARCH BUTTON */}
             <div className="flex items-end">
               <button
@@ -277,7 +265,6 @@ export default function SearchPage() {
                 )}
               </button>
             </div>
-
             {/* CLEAR BUTTON */}
             <div className="flex items-end">
               <button
@@ -292,7 +279,6 @@ export default function SearchPage() {
               </button>
             </div>
           </div>
-
           {/* ========================================= */}
           {/* KEYWORD INFO */}
           {/* ========================================= */}
@@ -301,21 +287,17 @@ export default function SearchPage() {
               <Filter className="h-4 w-4" />
               Keyword Search Format
             </div>
-
             <div className="space-y-3 text-sm text-zinc-700">
               <p>
                 Use <span className="font-bold">commas</span> <span className="font-bold">(,)</span> to separate required keywords or phrases (AND logic). <br />
                 Words separated by <span className="font-bold">spaces without commas</span> are treated as a single phrase.
               </p>
-
               <div className="rounded-xl bg-black p-4 font-mono text-sm text-green-400">
                 react, devops engineer, software developer, mongodb
               </div>
-
               <p className="text-zinc-600">
                 Search interpretation:
               </p>
-
               <div className="rounded-xl bg-zinc-100 p-4 font-mono text-sm text-black">
                 Resume must include <b>all</b> of:<br />
                 "react"<br />
@@ -323,7 +305,6 @@ export default function SearchPage() {
                 "software developer"<br />
                 "mongodb"
               </div>
-
               <p>
                 Example: <span className="font-mono bg-zinc-200 px-2 py-1 rounded">node.js developer</span> is treated as a single phrase.<br />
                 Example: <span className="font-mono bg-zinc-200 px-2 py-1 rounded">node.js, developer</span> requires both "node.js" AND "developer" (in any order).
@@ -331,7 +312,6 @@ export default function SearchPage() {
             </div>
           </div>
         </div>
-
         {/* ========================================= */}
         {/* RESULTS INFO */}
         {/* ========================================= */}
@@ -341,36 +321,62 @@ export default function SearchPage() {
             {resumes.length !== 1 && "s"} Found
           </h2>
         </div>
-
         {/* ========================================= */}
         {/* RESUME GRID */}
         {/* ========================================= */}
-
-        {resumes.length === 0 ? (
+        {fetchError ? (
+          <div className="rounded-[32px] border border-red-200 bg-red-50 py-24 text-center shadow-xl">
+            <div className="flex flex-col items-center justify-center">
+              <X className="mx-auto mb-5 h-16 w-16 text-red-400" />
+              <h3 className="text-3xl font-bold text-red-600">
+                {fetchError}
+              </h3>
+              <p className="mt-3 text-zinc-500">
+                Please check your connection or try again.
+              </p>
+            </div>
+          </div>
+        ) : resumes.length === 0 ? (
           <div className="rounded-[32px] border border-[#0530AD]/10 bg-white/90 py-24 text-center shadow-xl">
-
             <Search className="mx-auto mb-5 h-16 w-16 text-[#0530AD]" />
-
             <h3 className="text-3xl font-bold">
               No Resumes Found
             </h3>
-
             <p className="mt-3 text-zinc-500">
               Try different keywords or locations.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-            {resumes.map((resume) => (
-              <ResumeCard
-                key={resume._id}
-                resume={resume}
-                canDelete={
-                  String(resume.userId) ===
-                  String(user.id)
-                }
-              />
-            ))}
+            {resumes.map((resume) => {
+              // Only one card's comments expanded at a time by controlling prop via openCommentsResumeId
+              // The showComments/onToggleComments props are REMOVED because they're not defined in ResumeCardProps.
+              return (
+                <div key={resume._id} className="relative group">
+                  <ResumeCard
+                    resume={resume}
+                    canDelete={String(resume.userId) === String(user.id)}
+                    onResumeUpdated={(updatedResume) => {
+                      setResumes((prev) =>
+                        prev.map((r) =>
+                          r._id === updatedResume._id
+                            ? updatedResume
+                            : r
+                        )
+                      );
+                    }}
+                    onResumeDeleted={(deletedId) => {
+                      setResumes((prev) =>
+                        prev.filter((r) => r._id !== deletedId)
+                      );
+                      if (openCommentsResumeId === deletedId) {
+                        setOpenCommentsResumeId(null);
+                      }
+                    }}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

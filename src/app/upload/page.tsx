@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
@@ -17,6 +17,8 @@ import {
   User2,
   CheckCircle2,
   XCircle,
+  X,
+  RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -89,6 +91,9 @@ export default function UploadPage() {
     keywords: "",
   });
 
+  // For file input ref (to trigger click if replacing)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // TOAST STATE
   const [toast, setToast] = useState<{
     show: boolean;
@@ -150,6 +155,22 @@ export default function UploadPage() {
   ) => {
     if (e.target.files?.[0]) {
       setFile(e.target.files[0]);
+    }
+  };
+
+  // Remove the selected file
+  const handleRemoveFile = () => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Trigger file input click (for "Replace" option)
+  const handleReplaceFile = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
     }
   };
 
@@ -467,13 +488,16 @@ export default function UploadPage() {
                   }`}
                   style={{ backdropFilter: "blur(8px)" }}
                 >
+                  {/* File input - controlled by ref, always present but hidden */}
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
                     onChange={handleFileSelect}
                     className="absolute inset-0 cursor-pointer opacity-0"
-                    required
+                    ref={fileInputRef}
+                    required={!file}
                   />
+
                   <div className="flex flex-col items-center">
                     <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "#0530AD18" }}>
                       <UploadCloud className="h-10 w-10" style={{ color: PRIMARY }} />
@@ -485,13 +509,50 @@ export default function UploadPage() {
                       PDF, DOC, DOCX Supported
                     </p>
                     {file && (
-                      <div className="mt-5 flex items-center gap-3 rounded-2xl border border-[#0530AD22] bg-[#0530AD0D] px-5 py-3">
+                      <div className="mt-5 flex items-center gap-3 rounded-2xl border border-[#0530AD22] bg-[#0530AD0D] px-5 py-3 relative">
                         <FileText className="" style={{ color: PRIMARY }} />
-                        <span className="text-sm text-black">{file.name}</span>
+                        <span className="text-sm text-black break-all">{file.name}</span>
+                        {/* Action buttons for replacing or removing the file */}
+                        <button
+                          type="button"
+                          title="Replace file"
+                          onClick={handleReplaceFile}
+                          className="ml-3 text-blue-600 hover:text-blue-900 rounded transition-all flex items-center px-1 py-1"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          <span className="sr-only">Replace</span>
+                        </button>
+                        <button
+                          type="button"
+                          title="Remove file"
+                          onClick={handleRemoveFile}
+                          className="ml-1 text-red-500 hover:text-red-700 rounded transition-all flex items-center px-1 py-1"
+                        >
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Remove</span>
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
+                {file && (
+                  <div className="mt-2 flex gap-3 sm:hidden justify-center">
+                    <button
+                      type="button"
+                      onClick={handleReplaceFile}
+                      className="flex items-center gap-1 text-blue-600 text-sm hover:text-blue-900 px-2 py-1 rounded transition"
+                    >
+                      <RefreshCw className="h-4 w-4" /> Replace file
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="flex items-center gap-1 text-red-500 text-sm hover:text-red-700 px-2 py-1 rounded transition"
+                    >
+                      <X className="h-4 w-4" /> Remove
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* PROGRESS */}
