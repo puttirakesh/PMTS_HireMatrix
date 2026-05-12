@@ -326,7 +326,7 @@ export default function ResumeCard({
   if (editMode) {
     return (
       <div
-        className="fixed inset-0 z-50 bg-gradient-to-tr from-blue-100/80 via-blue-50/80 to-blue-200/80 flex justify-center items-start overflow-auto"
+        className="fixed inset-0 z-50 bg-linear-to-tr from-blue-100/80 via-blue-50/80 to-blue-200/80 flex justify-center items-start overflow-auto"
         style={{
           minHeight: "100vh",
           width: "100vw",
@@ -337,7 +337,7 @@ export default function ResumeCard({
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 40, scale: 0.97 }}
-          className="w-full max-w-2xl mx-auto rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-200/40 bg-gradient-to-b from-blue-50 via-white to-blue-100 p-0 overflow-visible relative my-14 flex flex-col"
+          className="w-full max-w-2xl mx-auto rounded-[2.5rem] border border-blue-100 shadow-2xl shadow-blue-200/40 bg-linear-to-b from-blue-50 via-white to-blue-100 p-0 overflow-visible relative my-14 flex flex-col"
           style={{
             minHeight: "70vh",
             maxHeight: "none",
@@ -397,7 +397,7 @@ export default function ResumeCard({
 
           {/* Beautiful scrollable edit form */}
           {!preventExit && (
-            <div className="flex-1 relative overflow-auto px-10 py-10 bg-gradient-to-br from-white/90 to-blue-50/80 rounded-b-[2.4rem]">
+            <div className="flex-1 relative overflow-auto px-10 py-10 bg-linear-to-br from-white/90 to-blue-50/80 rounded-b-[2.4rem]">
               <form
                 className="grid grid-cols-1 gap-8"
                 style={{
@@ -532,7 +532,7 @@ export default function ResumeCard({
                 <button
                   type="submit"
                   disabled={updating}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 py-4 text-lg font-extrabold text-white shadow-xl hover:shadow-blue-300/60 hover:from-blue-700 hover:to-blue-600 transition hover:scale-[1.025] disabled:opacity-60 focus:outline-none"
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-br from-blue-600 via-blue-500 to-blue-700 py-4 text-lg font-extrabold text-white shadow-xl hover:shadow-blue-300/60 hover:from-blue-700 hover:to-blue-600 transition hover:scale-[1.025] disabled:opacity-60 focus:outline-none"
                 >
                   {updating ?
                     (<><Loader2 className="h-5 w-5 animate-spin" /> Updating...</>) :
@@ -849,7 +849,7 @@ export default function ResumeCard({
 
         {/* Spacer to give room if comments are open or grow */}
         <div
-          className="flex-shrink-0 transition-all"
+          className="shrink-0 transition-all"
           style={{
             minHeight: expandedComments
               ? Math.min(comments.length * 70, 320)

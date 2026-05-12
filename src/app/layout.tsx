@@ -12,9 +12,7 @@ import Providers from "@/src/components/Providers";
 
 export const metadata: Metadata = {
   title: "HireMatrix",
-
-  description:
-    "Professional Resume Management Platform",
+  description: "Professional Resume Management Platform",
 };
 
 export default function RootLayout({
@@ -23,35 +21,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-
-      <html
-        lang="en"
-        suppressHydrationWarning
-      >
-
+    
+      <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
         <body suppressHydrationWarning>
-
+        <ClerkProvider>
           <Providers>
-
-            <div className="min-h-screen bg-[white] text-white">
-
+            <div
+              className="
+                min-h-screen
+                bg-[var(--background)] text-[var(--text)]
+                transition-colors duration-500
+              "
+            >
               <Navbar />
 
-              <main>
-                {children}
-              </main>
+              <main>{children}</main>
 
               <Footer />
-
             </div>
-
           </Providers>
-
+          </ClerkProvider>
         </body>
-
       </html>
-
-    </ClerkProvider>
+    
   );
 }

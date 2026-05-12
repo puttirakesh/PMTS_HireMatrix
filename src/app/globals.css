@@ -1,16 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap');
 
 @import "tailwindcss";
-@tailwind utilities;
+
+/* =========================
+   DARK MODE STRATEGY
+========================= */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================
+   LIGHT THEME
+========================= */
 
 :root {
-  --background: #ffffff;    /* White background */
-  --card: #f3f5f8;          /* Light blue-tinted card bg */
-  --primary: #2874fc;       /* Blue primary color */
-  --secondary: #0b0b0f;     /* Black as a secondary color */
-  --text: #0b0b0f;          /* Black text */
-  --muted: #4472c4;         /* Muted blue */
+  --background: #ffffff;
+  --card: #f8fafc;
+
+  --text: #0f172a;
+  --muted: #64748b;
+
+  --border: rgba(15, 23, 42, 0.08);
+
+  --primary: #2563eb;
+  --secondary: #1e293b;
+
+  --glass: rgba(255, 255, 255, 0.7);
 }
+
+/* =========================
+   DARK THEME
+========================= */
+
+.dark {
+  --background: #050816;
+  --card: #0f172a;
+
+  --text: #f8fafc;
+  --muted: #94a3b8;
+
+  --border: rgba(255, 255, 255, 0.08);
+
+  --primary: #3b82f6;
+  --secondary: #ffffff;
+
+  --glass: rgba(15, 23, 42, 0.7);
+}
+
+/* =========================
+   BASE
+========================= */
 
 html {
   scroll-behavior: smooth;
@@ -19,35 +57,150 @@ html {
 body {
   background: var(--background);
   color: var(--text);
+
   overflow-x: hidden;
-  font-family: Arial, Helvetica, sans-serif;
+
+  font-family: "DM Sans", sans-serif;
+
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+
+.font-syne {
+  font-family: "Syne", sans-serif;
+}
+
+/* =========================
+   THEME UTILITIES
+========================= */
+
+.theme-bg {
+  background: var(--background);
+}
+
+.theme-card {
+  background: var(--card);
+}
+
+.theme-text {
+  color: var(--text);
+}
+
+.theme-muted {
+  color: var(--muted);
+}
+
+.theme-border {
+  border-color: var(--border);
+}
+
+/* =========================
+   GLASS EFFECT
+========================= */
 
 .glass {
-  background: rgba(40, 116, 252, 0.03); /* subtle blue overlay */
+  background: var(--glass);
+
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(40, 116, 252, 0.08); /* blue border tint */
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid var(--border);
+
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06);
 }
 
-.blue-gradient {
-  background: linear-gradient(
-    to right,
-    #2874fc,
-    #005bea
-  );
+.dark .glass {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
-/* SCROLLBAR */
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.45;
+  }
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Fade-in (from old Tailwind config) */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
 
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #e2e8f0; /* very light blue/gray track */
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #007FFF;
+  background: var(--primary);
   border-radius: 999px;
+}
+
+/* =========================
+   SELECTION
+========================= */
+
+::selection {
+  background: var(--primary);
+  color: white;
 }
